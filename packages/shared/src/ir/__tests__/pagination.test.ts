@@ -241,6 +241,83 @@ describe('operationPagination', () => {
     expect(result?.schema?.type).toEqual('object');
   });
 
+  it('finds the pagination property inside an allOf composition', () => {
+    const schemas: Record<string, IR.SchemaObject> = {
+      '#/components/schemas/List': {
+        items: [
+          { $ref: '#/components/schemas/Pagination' },
+          {
+            properties: {
+              filters: { type: 'object' },
+            },
+            type: 'object',
+          },
+        ],
+        logicalOperator: 'and',
+      },
+      '#/components/schemas/Pagination': {
+        properties: {
+          limit: { type: 'integer' },
+          offset: { type: 'integer' },
+        },
+        type: 'object',
+      },
+    };
+    const context = {
+      resolveIrRef: (ref: string) => schemas[ref],
+    } as unknown as Context;
+
+    const operation: IR.OperationObject = {
+      ...baseOperationMeta,
+      body: {
+        mediaType: 'application/json',
+        pagination: 'offset',
+        schema: { $ref: '#/components/schemas/List' },
+      },
+      id: 'allOfPagination',
+    };
+
+    const result = operationPagination({ context, operation });
+
+    expect(result).toEqual({
+      in: 'body',
+      name: 'offset',
+      schema: { type: 'integer' },
+    });
+  });
+
+  it('does not search the members of a union with several non-null schemas', () => {
+    const operation: IR.OperationObject = {
+      ...baseOperationMeta,
+      body: {
+        mediaType: 'application/json',
+        pagination: 'offset',
+        schema: {
+          items: [
+            {
+              properties: {
+                offset: { type: 'integer' },
+              },
+              type: 'object',
+            },
+            {
+              properties: {
+                cursor: { type: 'string' },
+              },
+              type: 'object',
+            },
+          ],
+          logicalOperator: 'or',
+        },
+      },
+      id: 'unionPagination',
+    };
+
+    const result = operationPagination({ context: emptyContext, operation });
+
+    expect(result).toBeUndefined();
+  });
+
   it('falls back to query when pagination key not found in body', () => {
     const operation: IR.OperationObject = {
       ...baseOperationMeta,

@@ -21,6 +21,59 @@ export function createOperationKey({ method, path }: { method: string; path: str
   return `${method.toUpperCase()} ${path}`;
 }
 
+/**
+ * Finds the schema of the pagination property `name` in the request body.
+ *
+ * References are resolved at every level. Compositions are entered too:
+ * every member of an `allOf`, and the single non-null member of a nullable
+ * union such as `oneOf: [{ $ref }, { type: 'null' }]`.
+ */
+function bodyPaginationSchema({
+  context,
+  name,
+  schema,
+}: {
+  context: Context;
+  name: string;
+  schema: IR.SchemaObject;
+}): IR.SchemaObject | undefined {
+  if (schema.$ref) {
+    const resolved = context.resolveIrRef<IR.RequestBodyObject | IR.SchemaObject>(schema.$ref);
+    return bodyPaginationSchema({
+      context,
+      name,
+      schema: 'schema' in resolved ? resolved.schema : resolved,
+    });
+  }
+
+  const property = schema.properties?.[name];
+  if (property) {
+    return property;
+  }
+
+  if (!schema.items || schema.type === 'array' || schema.type === 'tuple') {
+    return;
+  }
+
+  const items =
+    schema.logicalOperator === 'and'
+      ? schema.items
+      : schema.items.filter((item) => item.type !== 'null');
+
+  if (schema.logicalOperator !== 'and' && items.length !== 1) {
+    return;
+  }
+
+  for (const item of items) {
+    const result = bodyPaginationSchema({ context, name, schema: item });
+    if (result) {
+      return result;
+    }
+  }
+
+  return;
+}
+
 export function operationPagination({
   context,
   operation,
@@ -45,13 +98,11 @@ export function operationPagination({
     };
   }
 
-  const schema = body.schema;
-  const resolvedSchema = schema.$ref
-    ? context.resolveIrRef<IR.RequestBodyObject | IR.SchemaObject>(schema.$ref)
-    : schema;
-
-  const finalSchema = 'schema' in resolvedSchema ? resolvedSchema.schema : resolvedSchema;
-  const paginationProp = finalSchema?.properties?.[body.pagination];
+  const paginationProp = bodyPaginationSchema({
+    context,
+    name: body.pagination,
+    schema: body.schema,
+  });
 
   if (!paginationProp) {
     return parameterWithPagination({

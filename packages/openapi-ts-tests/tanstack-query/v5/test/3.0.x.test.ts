@@ -26,6 +26,21 @@ describe(`OpenAPI ${version}`, () => {
       }),
       description: 'handles conflict between generated code and internal artifacts',
     },
+    {
+      config: createConfig({
+        input: 'pagination-body.yaml',
+        output: 'pagination-body',
+        parser: {
+          hooks: {
+            operations: {
+              isQuery: () => true,
+            },
+          },
+        },
+        plugins: ['@hey-api/client-fetch', '@tanstack/react-query'],
+      }),
+      description: 'detects pagination fields in request bodies',
+    },
   ];
 
   it.each(scenarios)('$description', async ({ config }) => {
