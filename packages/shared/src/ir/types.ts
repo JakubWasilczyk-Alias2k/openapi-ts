@@ -8,7 +8,9 @@ interface IRBodyObject {
   mediaType: string;
   /**
    * Does body control pagination? We handle only simple values
-   * for now, up to 1 nested field.
+   * for now. A string is the path to the field, either a top-level
+   * property (`offset`) or one nested in an object property whose name is
+   * a pagination keyword (`page.offset`).
    */
   pagination?: boolean | string;
   required?: boolean;

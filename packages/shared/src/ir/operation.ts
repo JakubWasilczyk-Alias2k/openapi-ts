@@ -22,7 +22,8 @@ export function createOperationKey({ method, path }: { method: string; path: str
 }
 
 /**
- * Finds the schema of the pagination property `name` in the request body.
+ * Walks a dotted pagination path (e.g. `offset` or `page.offset`) through the
+ * request body schema and returns the schema of the last segment.
  *
  * References are resolved at every level. Compositions are entered too:
  * every member of an `allOf`, and the single non-null member of a nullable
@@ -30,25 +31,26 @@ export function createOperationKey({ method, path }: { method: string; path: str
  */
 function bodyPaginationSchema({
   context,
-  name,
+  path,
   schema,
 }: {
   context: Context;
-  name: string;
+  path: ReadonlyArray<string>;
   schema: IR.SchemaObject;
 }): IR.SchemaObject | undefined {
   if (schema.$ref) {
     const resolved = context.resolveIrRef<IR.RequestBodyObject | IR.SchemaObject>(schema.$ref);
     return bodyPaginationSchema({
       context,
-      name,
+      path,
       schema: 'schema' in resolved ? resolved.schema : resolved,
     });
   }
 
-  const property = schema.properties?.[name];
+  const [name, ...rest] = path;
+  const property = schema.properties?.[name!];
   if (property) {
-    return property;
+    return rest.length ? bodyPaginationSchema({ context, path: rest, schema: property }) : property;
   }
 
   if (!schema.items || schema.type === 'array' || schema.type === 'tuple') {
@@ -65,7 +67,7 @@ function bodyPaginationSchema({
   }
 
   for (const item of items) {
-    const result = bodyPaginationSchema({ context, name, schema: item });
+    const result = bodyPaginationSchema({ context, path, schema: item });
     if (result) {
       return result;
     }
@@ -100,7 +102,7 @@ export function operationPagination({
 
   const paginationProp = bodyPaginationSchema({
     context,
-    name: body.pagination,
+    path: body.pagination.split('.'),
     schema: body.schema,
   });
 

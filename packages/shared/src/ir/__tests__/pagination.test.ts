@@ -286,6 +286,61 @@ describe('operationPagination', () => {
     });
   });
 
+  it.each([
+    {
+      description: 'object',
+      page: { $ref: '#/components/schemas/Pagination' },
+    },
+    {
+      description: 'nullable object',
+      page: {
+        items: [{ $ref: '#/components/schemas/Pagination' }, { type: 'null' }],
+        logicalOperator: 'or',
+      },
+    },
+  ] satisfies ReadonlyArray<{ description: string; page: IR.SchemaObject }>)(
+    'walks a nested pagination path through a $description',
+    ({ page }) => {
+      const schemas: Record<string, IR.SchemaObject> = {
+        '#/components/schemas/List': {
+          properties: {
+            filters: { type: 'object' },
+            page,
+          },
+          type: 'object',
+        },
+        '#/components/schemas/Pagination': {
+          properties: {
+            limit: { type: 'integer' },
+            offset: { type: 'integer' },
+          },
+          type: 'object',
+        },
+      };
+      const context = {
+        resolveIrRef: (ref: string) => schemas[ref],
+      } as unknown as Context;
+
+      const operation: IR.OperationObject = {
+        ...baseOperationMeta,
+        body: {
+          mediaType: 'application/json',
+          pagination: 'page.offset',
+          schema: { $ref: '#/components/schemas/List' },
+        },
+        id: 'nestedPagination',
+      };
+
+      const result = operationPagination({ context, operation });
+
+      expect(result).toEqual({
+        in: 'body',
+        name: 'page.offset',
+        schema: { type: 'integer' },
+      });
+    },
+  );
+
   it('does not search the members of a union with several non-null schemas', () => {
     const operation: IR.OperationObject = {
       ...baseOperationMeta,

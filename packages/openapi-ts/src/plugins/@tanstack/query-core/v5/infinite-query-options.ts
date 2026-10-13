@@ -90,6 +90,30 @@ function createInfiniteParamsFunction({ plugin }: { plugin: PluginInstance }): v
   plugin.node(fn);
 }
 
+/**
+ * Builds the page object passed to `createInfiniteParams()`.
+ *
+ * A nested body field such as `page.offset` becomes
+ * `{ body: { page: { ...queryKey[0].body?.page, offset: pageParam } } }`.
+ * `createInfiniteParams()` merges the body only one level deep, so the
+ * sibling fields of the nested object (e.g. `limit`) must be carried over
+ * from the query key here.
+ */
+function createPageParam({ location, name }: { location: string; name: string }) {
+  const segments = location === 'body' ? name.split('.') : [name];
+
+  let value: ReturnType<typeof $.object> | ReturnType<typeof $> = $('pageParam');
+  for (let index = segments.length - 1; index > 0; index--) {
+    let source = $('queryKey').attr(0).attr('body');
+    for (const segment of segments.slice(0, index)) {
+      source = source.attr(segment).optional();
+    }
+    value = $.object().pretty().spread(source).prop(segments[index]!, value);
+  }
+
+  return $.object().pretty().prop(location, $.object().pretty().prop(segments[0]!, value));
+}
+
 export function createInfiniteQueryOptions({
   operation,
   plugin,
@@ -200,11 +224,7 @@ export function createInfiniteQueryOptions({
       .assign(
         $.ternary($('pageParam').typeofExpr().eq($.literal('object')))
           .do('pageParam')
-          .otherwise(
-            $.object()
-              .pretty()
-              .prop(pagination.in, $.object().pretty().prop(pagination.name, $('pageParam'))),
-          ),
+          .otherwise(createPageParam({ location: pagination.in, name: pagination.name })),
       ),
     $.const('params').assign($(symbolCreateInfiniteParams).call('queryKey', 'page')),
   ];

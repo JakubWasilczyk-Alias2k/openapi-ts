@@ -112,3 +112,86 @@ export const paginationField = ({
 
   return false;
 };
+
+function nonNullableSchema(schema: OpenAPIV3_1.SchemaObject): OpenAPIV3_1.SchemaObject {
+  const nonNullCompositionSchemas = (schema.anyOf ?? schema.oneOf ?? []).filter(
+    (schema) => schema.type !== 'null',
+  );
+  return nonNullCompositionSchemas.length === 1 ? nonNullCompositionSchemas[0]! : schema;
+}
+
+/**
+ * Looks for a scalar pagination field one level down, inside an object
+ * property such as `page: { offset, limit }`. Returns a dotted path, e.g.
+ * `page.offset`.
+ *
+ * Only properties whose own name is a pagination keyword are entered. Any
+ * object can hold a keyword-named scalar (`filters.start` is a date filter,
+ * not a cursor), so the container name is what signals pagination intent.
+ */
+function nestedPaginationField({
+  context,
+  schema,
+}: {
+  context: Context;
+  schema: OpenAPIV3_1.SchemaObject;
+}): string | false {
+  if (schema.$ref) {
+    return nestedPaginationField({
+      context,
+      schema: context.resolveRef<OpenAPIV3_1.SchemaObject>(schema.$ref),
+    });
+  }
+
+  const paginationRegExp = getPaginationKeywordsRegExp(context.config.parser.pagination);
+
+  for (const name in schema.properties) {
+    const property = schema.properties[name]!;
+
+    if (typeof property === 'boolean' || !paginationRegExp.test(name)) {
+      continue;
+    }
+
+    const field = paginationField({
+      context,
+      name: '',
+      schema: nonNullableSchema(property),
+    });
+    if (typeof field === 'string') {
+      return `${name}.${field}`;
+    }
+  }
+
+  for (const allOf of schema.allOf ?? []) {
+    const field = nestedPaginationField({
+      context,
+      schema: allOf,
+    });
+    if (field) {
+      return field;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Detects the pagination field of a request body. Top-level fields win, and
+ * only when none is found do we look one level down (see
+ * `nestedPaginationField`), so bodies detected before keep their result.
+ */
+export function requestBodyPaginationField({
+  context,
+  schema,
+}: {
+  context: Context;
+  schema: OpenAPIV3_1.SchemaObject;
+}): boolean | string {
+  return (
+    paginationField({
+      context,
+      name: '',
+      schema,
+    }) || nestedPaginationField({ context, schema })
+  );
+}

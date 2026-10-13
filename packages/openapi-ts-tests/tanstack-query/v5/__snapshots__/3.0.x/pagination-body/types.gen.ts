@@ -18,6 +18,20 @@ export type AllOfList = Pagination & {
   filters?: Filters;
 };
 
+export type NestedList = {
+  filters?: Filters;
+  page?: Pagination;
+};
+
+export type NestedNullableList = {
+  filters?: Filters;
+  page?: Pagination | null;
+};
+
+export type FiltersList = {
+  filters?: Filters;
+};
+
 export type PostAllOfData = {
   body: AllOfList;
   path?: never;
@@ -33,3 +47,51 @@ export type PostAllOfResponses = {
 };
 
 export type PostAllOfResponse = PostAllOfResponses[keyof PostAllOfResponses];
+
+export type PostNestedData = {
+  body: NestedList;
+  path?: never;
+  query?: never;
+  url: '/nested';
+};
+
+export type PostNestedResponses = {
+  /**
+   * OK
+   */
+  200: Array<string>;
+};
+
+export type PostNestedResponse = PostNestedResponses[keyof PostNestedResponses];
+
+export type PostNestedNullableData = {
+  body: NestedNullableList;
+  path?: never;
+  query?: never;
+  url: '/nested-nullable';
+};
+
+export type PostNestedNullableResponses = {
+  /**
+   * OK
+   */
+  200: Array<string>;
+};
+
+export type PostNestedNullableResponse = PostNestedNullableResponses[keyof PostNestedNullableResponses];
+
+export type PostNestedFiltersData = {
+  body: FiltersList;
+  path?: never;
+  query?: never;
+  url: '/nested-filters';
+};
+
+export type PostNestedFiltersResponses = {
+  /**
+   * OK
+   */
+  200: Array<string>;
+};
+
+export type PostNestedFiltersResponse = PostNestedFiltersResponses[keyof PostNestedFiltersResponses];
