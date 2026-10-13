@@ -1,0 +1,53 @@
+openapi: 3.1.1
+info:
+  title: OpenAPI 3.1.1 request body pagination example
+  version: 1
+paths:
+  /all-of:
+    post:
+      operationId: postAllOf
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/AllOfList'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  type: string
+components:
+  schemas:
+    Pagination:
+      properties:
+        limit:
+          type: integer
+          minimum: 0
+        offset:
+          type: integer
+          minimum: 0
+      type: object
+    Filters:
+      properties:
+        name:
+          type:
+            - string
+            - 'null'
+        start:
+          type:
+            - string
+            - 'null'
+          format: date-time
+      type: object
+    AllOfList:
+      allOf:
+        - $ref: '#/components/schemas/Pagination'
+        - properties:
+            filters:
+              $ref: '#/components/schemas/Filters'
+          type: object

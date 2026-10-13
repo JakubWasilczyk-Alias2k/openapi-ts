@@ -45,6 +45,21 @@ describe(`OpenAPI ${version}`, () => {
     },
     {
       config: createConfig({
+        input: 'pagination-body.yaml',
+        output: 'pagination-body',
+        parser: {
+          hooks: {
+            operations: {
+              isQuery: () => true,
+            },
+          },
+        },
+        plugins: ['@hey-api/client-fetch', '@tanstack/react-query'],
+      }),
+      description: 'detects pagination fields in request bodies',
+    },
+    {
+      config: createConfig({
         input: 'sse-post.yaml',
         output: 'sse-react-query',
         plugins: ['@hey-api/client-fetch', '@tanstack/react-query'],
