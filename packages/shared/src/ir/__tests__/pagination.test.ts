@@ -2,7 +2,7 @@ import { defaultPaginationKeywords } from '../../config/parser/config';
 import type { Parser } from '../../config/parser/types';
 import type { Context } from '../context';
 import { operationPagination } from '../operation';
-import { getPaginationKeywordsRegExp } from '../pagination';
+import { getPaginationKeywordsRegExp, getPaginationPaths } from '../pagination';
 import type { IR } from '../types';
 
 describe('paginationKeywordsRegExp', () => {
@@ -71,6 +71,45 @@ describe('paginationKeywordsRegExp', () => {
       expect(paginationRegExp.test(value)).toEqual(result);
     },
   );
+
+  const pathScenarios: ReadonlyArray<{
+    keywords: ReadonlyArray<string>;
+    result: boolean;
+    value: string;
+  }> = [
+    { keywords: ['cursor', 'page.offset'], result: true, value: 'cursor' },
+    { keywords: ['cursor', 'page.offset'], result: false, value: 'page.offset' },
+    { keywords: ['cursor', 'page.offset'], result: false, value: 'pageXoffset' },
+    { keywords: ['cursor', 'page.offset'], result: false, value: 'page' },
+    { keywords: ['page.offset'], result: false, value: '' },
+    { keywords: ['page.offset'], result: false, value: 'offset' },
+    { keywords: [], result: false, value: '' },
+  ];
+
+  it.each(pathScenarios)(
+    'with keywords $keywords, $value should match? $result',
+    async ({ keywords, result, value }) => {
+      const paginationRegExp = getPaginationKeywordsRegExp({ keywords });
+      expect(paginationRegExp.test(value)).toEqual(result);
+    },
+  );
+});
+
+describe('getPaginationPaths', () => {
+  it('returns the dotted keywords split into segments, in config order', () => {
+    expect(
+      getPaginationPaths({
+        keywords: [...defaultPaginationKeywords, 'page.extra.offset', 'page.offset'],
+      }),
+    ).toEqual([
+      ['page', 'extra', 'offset'],
+      ['page', 'offset'],
+    ]);
+  });
+
+  it('returns nothing for the default keywords', () => {
+    expect(getPaginationPaths({ keywords: defaultPaginationKeywords })).toEqual([]);
+  });
 });
 
 describe('operationPagination', () => {
@@ -282,6 +321,109 @@ describe('operationPagination', () => {
     expect(result).toEqual({
       in: 'body',
       name: 'offset',
+      schema: { type: 'integer' },
+    });
+  });
+
+  it.each([
+    {
+      description: 'object',
+      page: { $ref: '#/components/schemas/Pagination' },
+    },
+    {
+      description: 'nullable object',
+      page: {
+        items: [{ $ref: '#/components/schemas/Pagination' }, { type: 'null' }],
+        logicalOperator: 'or',
+      },
+    },
+  ] satisfies ReadonlyArray<{ description: string; page: IR.SchemaObject }>)(
+    'walks a nested pagination path through a $description',
+    ({ page }) => {
+      const schemas: Record<string, IR.SchemaObject> = {
+        '#/components/schemas/List': {
+          properties: {
+            filters: { type: 'object' },
+            page,
+          },
+          type: 'object',
+        },
+        '#/components/schemas/Pagination': {
+          properties: {
+            limit: { type: 'integer' },
+            offset: { type: 'integer' },
+          },
+          type: 'object',
+        },
+      };
+      const context = {
+        resolveIrRef: (ref: string) => schemas[ref],
+      } as unknown as Context;
+
+      const operation: IR.OperationObject = {
+        ...baseOperationMeta,
+        body: {
+          mediaType: 'application/json',
+          pagination: 'page.offset',
+          schema: { $ref: '#/components/schemas/List' },
+        },
+        id: 'nestedPagination',
+      };
+
+      const result = operationPagination({ context, operation });
+
+      expect(result).toEqual({
+        in: 'body',
+        name: 'page.offset',
+        schema: { type: 'integer' },
+      });
+    },
+  );
+
+  it('walks a pagination path two levels deep', () => {
+    const schemas: Record<string, IR.SchemaObject> = {
+      '#/components/schemas/Pagination': {
+        properties: {
+          limit: { type: 'integer' },
+          offset: { type: 'integer' },
+        },
+        type: 'object',
+      },
+    };
+    const context = {
+      resolveIrRef: (ref: string) => schemas[ref],
+    } as unknown as Context;
+
+    const operation: IR.OperationObject = {
+      ...baseOperationMeta,
+      body: {
+        mediaType: 'application/json',
+        pagination: 'page.extra.offset',
+        schema: {
+          properties: {
+            page: {
+              items: [
+                {
+                  properties: {
+                    extra: { $ref: '#/components/schemas/Pagination' },
+                  },
+                  type: 'object',
+                },
+              ],
+              logicalOperator: 'and',
+            },
+          },
+          type: 'object',
+        },
+      },
+      id: 'deepPagination',
+    };
+
+    const result = operationPagination({ context, operation });
+
+    expect(result).toEqual({
+      in: 'body',
+      name: 'page.extra.offset',
       schema: { type: 'integer' },
     });
   });

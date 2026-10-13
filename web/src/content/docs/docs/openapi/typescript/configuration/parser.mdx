@@ -550,6 +550,24 @@ export default {
   </TabItem>
 </Tabs>
 
+### Nested Fields
+
+Request bodies are searched for pagination keywords among their top-level properties only. If your pagination field is nested, e.g. `{ page: { offset, limit } }`, add its path to `pagination.keywords` using dot notation. Paths can be of any depth and are used only for request bodies, when no top-level property matches.
+
+```js {8} title="openapi-ts.config.ts"
+import { defaultPaginationKeywords } from '@hey-api/openapi-ts';
+
+export default {
+  input: 'hey-api/backend', // sign up at app.heyapi.dev
+  output: 'src/client',
+  parser: {
+    pagination: {
+      keywords: [...defaultPaginationKeywords, 'page.offset'],
+    },
+  },
+};
+```
+
 ## Hooks
 
 Hooks affect runtime behavior but aren't tied to any single plugin. They can be configured globally via `hooks` or per plugin through the `$hooks` property.

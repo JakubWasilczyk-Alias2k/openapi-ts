@@ -6,7 +6,7 @@ import type { State } from '../../../openApi/shared/types/state';
 import type { httpMethods } from '../../../openApi/shared/utils/operation';
 import { operationToId } from '../../../openApi/shared/utils/operation';
 import { contentToSchema, mediaTypeObjects } from './mediaType';
-import { paginationField } from './pagination';
+import { requestBodyPaginationField } from './pagination';
 import { parseExtensions, schemaToIrSchema } from './schema';
 
 export interface Operation
@@ -113,9 +113,8 @@ function operationToIrOperation({
     const content = contents.find((content) => content.type === 'json') || contents[0];
 
     if (content) {
-      const pagination = paginationField({
+      const pagination = requestBodyPaginationField({
         context,
-        name: '',
         schema: {
           description: requestBody.description,
           ...content.schema,

@@ -5,7 +5,7 @@ import type { IR } from '../../../ir/types';
 import type { State } from '../../../openApi/shared/types/state';
 import { operationToId } from '../../../openApi/shared/utils/operation';
 import { contentToSchema, mediaTypeObjects } from './mediaType';
-import { paginationField } from './pagination';
+import { requestBodyPaginationField } from './pagination';
 import { parseExtensions, schemaToIrSchema } from './schema';
 
 interface Operation
@@ -112,9 +112,8 @@ function operationToIrOperation({
     const content = contents.find((content) => content.type === 'json') || contents[0];
 
     if (content) {
-      const pagination = paginationField({
+      const pagination = requestBodyPaginationField({
         context,
-        name: '',
         schema:
           content.schema && '$ref' in content.schema
             ? {

@@ -3,8 +3,8 @@
 import { type DefaultError, type InfiniteData, infiniteQueryOptions, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { type Options, postAllOf } from '../sdk.gen';
-import type { PostAllOfData, PostAllOfResponse } from '../types.gen';
+import { type Options, postAllOf, postNested, postNestedDeep, postNestedFilters, postNestedNullable } from '../sdk.gen';
+import type { PostAllOfData, PostAllOfResponse, PostNestedData, PostNestedDeepData, PostNestedDeepResponse, PostNestedFiltersData, PostNestedFiltersResponse, PostNestedNullableData, PostNestedNullableResponse, PostNestedResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
   Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -114,6 +114,122 @@ export const postAllOfMutation = (options?: Partial<Options<PostAllOfData>>): Us
   const mutationOptions: UseMutationOptions<PostAllOfResponse, DefaultError, Options<PostAllOfData>> = {
     mutationFn: async (fnOptions) => {
       const { data } = await postAllOf({
+        ...options,
+        ...fnOptions,
+        throwOnError: true
+      });
+      return data;
+    }
+  };
+  return mutationOptions;
+};
+
+export const postNestedQueryKey = (options: Options<PostNestedData>) => createQueryKey('postNested', options);
+
+export const postNestedOptions = (options: Options<PostNestedData>) => queryOptions<PostNestedResponse, DefaultError, PostNestedResponse, ReturnType<typeof postNestedQueryKey>>({
+  queryFn: async ({ queryKey, signal }) => {
+    const { data } = await postNested({
+      ...options,
+      ...queryKey[0],
+      signal,
+      throwOnError: true
+    });
+    return data;
+  },
+  queryKey: postNestedQueryKey(options)
+});
+
+export const postNestedMutation = (options?: Partial<Options<PostNestedData>>): UseMutationOptions<PostNestedResponse, DefaultError, Options<PostNestedData>> => {
+  const mutationOptions: UseMutationOptions<PostNestedResponse, DefaultError, Options<PostNestedData>> = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postNested({
+        ...options,
+        ...fnOptions,
+        throwOnError: true
+      });
+      return data;
+    }
+  };
+  return mutationOptions;
+};
+
+export const postNestedDeepQueryKey = (options: Options<PostNestedDeepData>) => createQueryKey('postNestedDeep', options);
+
+export const postNestedDeepOptions = (options: Options<PostNestedDeepData>) => queryOptions<PostNestedDeepResponse, DefaultError, PostNestedDeepResponse, ReturnType<typeof postNestedDeepQueryKey>>({
+  queryFn: async ({ queryKey, signal }) => {
+    const { data } = await postNestedDeep({
+      ...options,
+      ...queryKey[0],
+      signal,
+      throwOnError: true
+    });
+    return data;
+  },
+  queryKey: postNestedDeepQueryKey(options)
+});
+
+export const postNestedDeepMutation = (options?: Partial<Options<PostNestedDeepData>>): UseMutationOptions<PostNestedDeepResponse, DefaultError, Options<PostNestedDeepData>> => {
+  const mutationOptions: UseMutationOptions<PostNestedDeepResponse, DefaultError, Options<PostNestedDeepData>> = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postNestedDeep({
+        ...options,
+        ...fnOptions,
+        throwOnError: true
+      });
+      return data;
+    }
+  };
+  return mutationOptions;
+};
+
+export const postNestedNullableQueryKey = (options: Options<PostNestedNullableData>) => createQueryKey('postNestedNullable', options);
+
+export const postNestedNullableOptions = (options: Options<PostNestedNullableData>) => queryOptions<PostNestedNullableResponse, DefaultError, PostNestedNullableResponse, ReturnType<typeof postNestedNullableQueryKey>>({
+  queryFn: async ({ queryKey, signal }) => {
+    const { data } = await postNestedNullable({
+      ...options,
+      ...queryKey[0],
+      signal,
+      throwOnError: true
+    });
+    return data;
+  },
+  queryKey: postNestedNullableQueryKey(options)
+});
+
+export const postNestedNullableMutation = (options?: Partial<Options<PostNestedNullableData>>): UseMutationOptions<PostNestedNullableResponse, DefaultError, Options<PostNestedNullableData>> => {
+  const mutationOptions: UseMutationOptions<PostNestedNullableResponse, DefaultError, Options<PostNestedNullableData>> = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postNestedNullable({
+        ...options,
+        ...fnOptions,
+        throwOnError: true
+      });
+      return data;
+    }
+  };
+  return mutationOptions;
+};
+
+export const postNestedFiltersQueryKey = (options: Options<PostNestedFiltersData>) => createQueryKey('postNestedFilters', options);
+
+export const postNestedFiltersOptions = (options: Options<PostNestedFiltersData>) => queryOptions<PostNestedFiltersResponse, DefaultError, PostNestedFiltersResponse, ReturnType<typeof postNestedFiltersQueryKey>>({
+  queryFn: async ({ queryKey, signal }) => {
+    const { data } = await postNestedFilters({
+      ...options,
+      ...queryKey[0],
+      signal,
+      throwOnError: true
+    });
+    return data;
+  },
+  queryKey: postNestedFiltersQueryKey(options)
+});
+
+export const postNestedFiltersMutation = (options?: Partial<Options<PostNestedFiltersData>>): UseMutationOptions<PostNestedFiltersResponse, DefaultError, Options<PostNestedFiltersData>> => {
+  const mutationOptions: UseMutationOptions<PostNestedFiltersResponse, DefaultError, Options<PostNestedFiltersData>> = {
+    mutationFn: async (fnOptions) => {
+      const { data } = await postNestedFilters({
         ...options,
         ...fnOptions,
         throwOnError: true

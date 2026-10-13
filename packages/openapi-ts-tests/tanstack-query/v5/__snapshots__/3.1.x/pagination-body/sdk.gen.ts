@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { PostAllOfData, PostAllOfResponses } from './types.gen';
+import type { PostAllOfData, PostAllOfResponses, PostNestedData, PostNestedDeepData, PostNestedDeepResponses, PostNestedFiltersData, PostNestedFiltersResponses, PostNestedNullableData, PostNestedNullableResponses, PostNestedResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
   /**
@@ -20,6 +20,42 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 
 export const postAllOf = <ThrowOnError extends boolean = false>(options: Options<PostAllOfData, ThrowOnError>): RequestResult<PostAllOfResponses, unknown, ThrowOnError> => (options.client ?? client).post<PostAllOfResponses, unknown, ThrowOnError>({
   url: '/all-of',
+  ...options,
+  headers: {
+    'Content-Type': 'application/json',
+    ...options.headers
+  }
+});
+
+export const postNested = <ThrowOnError extends boolean = false>(options: Options<PostNestedData, ThrowOnError>): RequestResult<PostNestedResponses, unknown, ThrowOnError> => (options.client ?? client).post<PostNestedResponses, unknown, ThrowOnError>({
+  url: '/nested',
+  ...options,
+  headers: {
+    'Content-Type': 'application/json',
+    ...options.headers
+  }
+});
+
+export const postNestedDeep = <ThrowOnError extends boolean = false>(options: Options<PostNestedDeepData, ThrowOnError>): RequestResult<PostNestedDeepResponses, unknown, ThrowOnError> => (options.client ?? client).post<PostNestedDeepResponses, unknown, ThrowOnError>({
+  url: '/nested-deep',
+  ...options,
+  headers: {
+    'Content-Type': 'application/json',
+    ...options.headers
+  }
+});
+
+export const postNestedNullable = <ThrowOnError extends boolean = false>(options: Options<PostNestedNullableData, ThrowOnError>): RequestResult<PostNestedNullableResponses, unknown, ThrowOnError> => (options.client ?? client).post<PostNestedNullableResponses, unknown, ThrowOnError>({
+  url: '/nested-nullable',
+  ...options,
+  headers: {
+    'Content-Type': 'application/json',
+    ...options.headers
+  }
+});
+
+export const postNestedFilters = <ThrowOnError extends boolean = false>(options: Options<PostNestedFiltersData, ThrowOnError>): RequestResult<PostNestedFiltersResponses, unknown, ThrowOnError> => (options.client ?? client).post<PostNestedFiltersResponses, unknown, ThrowOnError>({
+  url: '/nested-filters',
   ...options,
   headers: {
     'Content-Type': 'application/json',

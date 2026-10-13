@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { createClient } from '@hey-api/openapi-ts';
+import { createClient, defaultPaginationKeywords } from '@hey-api/openapi-ts';
 
 import { getFilePaths } from '../../../utils';
 import { snapshotsDir, tmpDir } from './constants';
@@ -40,6 +40,24 @@ describe(`OpenAPI ${version}`, () => {
         plugins: ['@hey-api/client-fetch', '@tanstack/react-query'],
       }),
       description: 'detects pagination fields in request bodies',
+    },
+    {
+      config: createConfig({
+        input: 'pagination-body.yaml',
+        output: 'pagination-body-nested',
+        parser: {
+          hooks: {
+            operations: {
+              isQuery: () => true,
+            },
+          },
+          pagination: {
+            keywords: [...defaultPaginationKeywords, 'page.offset', 'page.extra.offset'],
+          },
+        },
+        plugins: ['@hey-api/client-fetch', '@tanstack/react-query'],
+      }),
+      description: 'detects nested pagination fields in request bodies with dotted keywords',
     },
   ];
 

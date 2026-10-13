@@ -27,6 +27,11 @@ export type UserParser = {
      * Array of keywords to be considered as pagination field names.
      * These will be used to detect pagination fields in schemas and parameters.
      *
+     * A keyword containing a dot is a path to a field nested in the request
+     * body, at any depth, e.g. `page.offset` for `{ page: { offset, limit } }`.
+     * Paths are tried only when no top-level body field matches, and never
+     * match parameters.
+     *
      * @default ['after', 'before', 'cursor', 'offset', 'page', 'start']
      */
     keywords?: ReadonlyArray<string>;
@@ -223,6 +228,11 @@ export type Parser = {
     /**
      * Array of keywords to be considered as pagination field names.
      * These will be used to detect pagination fields in schemas and parameters.
+     *
+     * A keyword containing a dot is a path to a field nested in the request
+     * body, at any depth, e.g. `page.offset` for `{ page: { offset, limit } }`.
+     * Paths are tried only when no top-level body field matches, and never
+     * match parameters.
      *
      * @default ['after', 'before', 'cursor', 'offset', 'page', 'start']
      */

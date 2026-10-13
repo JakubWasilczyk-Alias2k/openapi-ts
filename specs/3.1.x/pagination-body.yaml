@@ -21,6 +21,78 @@ paths:
                 type: array
                 items:
                   type: string
+  /nested:
+    post:
+      operationId: postNested
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/NestedList'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  type: string
+  /nested-deep:
+    post:
+      operationId: postNestedDeep
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/NestedDeepList'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  type: string
+  /nested-nullable:
+    post:
+      operationId: postNestedNullable
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/NestedNullableList'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  type: string
+  /nested-filters:
+    post:
+      operationId: postNestedFilters
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/FiltersList'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  type: string
 components:
   schemas:
     Pagination:
@@ -51,3 +123,34 @@ components:
             filters:
               $ref: '#/components/schemas/Filters'
           type: object
+    NestedList:
+      properties:
+        filters:
+          $ref: '#/components/schemas/Filters'
+        page:
+          $ref: '#/components/schemas/Pagination'
+      type: object
+    NestedDeepList:
+      properties:
+        filters:
+          $ref: '#/components/schemas/Filters'
+        page:
+          properties:
+            extra:
+              $ref: '#/components/schemas/Pagination'
+          type: object
+      type: object
+    NestedNullableList:
+      properties:
+        filters:
+          $ref: '#/components/schemas/Filters'
+        page:
+          oneOf:
+            - $ref: '#/components/schemas/Pagination'
+            - type: 'null'
+      type: object
+    FiltersList:
+      properties:
+        filters:
+          $ref: '#/components/schemas/Filters'
+      type: object
