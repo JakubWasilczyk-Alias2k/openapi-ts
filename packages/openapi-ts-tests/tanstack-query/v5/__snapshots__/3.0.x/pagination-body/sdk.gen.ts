@@ -5,51 +5,51 @@ import { client } from './client.gen';
 import type { PostAllOfData, PostAllOfResponses, PostNestedData, PostNestedFiltersData, PostNestedFiltersResponses, PostNestedNullableData, PostNestedNullableResponses, PostNestedResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
-  /**
-   * You can provide a client instance returned by `createClient()` instead of
-   * individual options. This might be also useful if you want to implement a
-   * custom client.
-   */
-  client?: Client;
-  /**
-   * You can pass arbitrary values through the `meta` object. This can be
-   * used to access values that aren't defined as part of the SDK function.
-   */
-  meta?: keyof ClientMeta extends never ? Record<string, unknown> : ClientMeta;
+    /**
+     * You can provide a client instance returned by `createClient()` instead of
+     * individual options. This might be also useful if you want to implement a
+     * custom client.
+     */
+    client?: Client;
+    /**
+     * You can pass arbitrary values through the `meta` object. This can be
+     * used to access values that aren't defined as part of the SDK function.
+     */
+    meta?: keyof ClientMeta extends never ? Record<string, unknown> : ClientMeta;
 };
 
 export const postAllOf = <ThrowOnError extends boolean = false>(options: Options<PostAllOfData, ThrowOnError>): RequestResult<PostAllOfResponses, unknown, ThrowOnError> => (options.client ?? client).post<PostAllOfResponses, unknown, ThrowOnError>({
-  url: '/all-of',
-  ...options,
-  headers: {
-    'Content-Type': 'application/json',
-    ...options.headers
-  }
+    url: '/all-of',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 export const postNested = <ThrowOnError extends boolean = false>(options: Options<PostNestedData, ThrowOnError>): RequestResult<PostNestedResponses, unknown, ThrowOnError> => (options.client ?? client).post<PostNestedResponses, unknown, ThrowOnError>({
-  url: '/nested',
-  ...options,
-  headers: {
-    'Content-Type': 'application/json',
-    ...options.headers
-  }
+    url: '/nested',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 export const postNestedNullable = <ThrowOnError extends boolean = false>(options: Options<PostNestedNullableData, ThrowOnError>): RequestResult<PostNestedNullableResponses, unknown, ThrowOnError> => (options.client ?? client).post<PostNestedNullableResponses, unknown, ThrowOnError>({
-  url: '/nested-nullable',
-  ...options,
-  headers: {
-    'Content-Type': 'application/json',
-    ...options.headers
-  }
+    url: '/nested-nullable',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 export const postNestedFilters = <ThrowOnError extends boolean = false>(options: Options<PostNestedFiltersData, ThrowOnError>): RequestResult<PostNestedFiltersResponses, unknown, ThrowOnError> => (options.client ?? client).post<PostNestedFiltersResponses, unknown, ThrowOnError>({
-  url: '/nested-filters',
-  ...options,
-  headers: {
-    'Content-Type': 'application/json',
-    ...options.headers
-  }
+    url: '/nested-filters',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
